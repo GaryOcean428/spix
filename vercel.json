@@ -19,5 +19,17 @@
             "src": "src/**/*.tsx",
             "use": "@vercel/node"
         }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
+        }
+    ],
+    "probes": [
+        {
+            "path": "/",
+            "status": 200
+        }
     ]
 }
