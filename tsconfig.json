@@ -16,7 +16,7 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false, // Set to false to allow unused React import for tooling compatibility
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
