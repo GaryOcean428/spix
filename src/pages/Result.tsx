@@ -58,15 +58,17 @@ async function callOpenAI(query: string): Promise<string> {
         }),
     });
 
-    if (!response.ok) {
-        let errorData: { error?: { message?: string } } = {};
-        try {
-            errorData = await response.json();
-        } catch (e) {
-            errorData = { error: { message: `HTTP error! status: ${response.status} ${response.statusText}` } };
-        }
-        console.error("OpenAI API Error:", errorData);
-        throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+    // Call backend API route instead of OpenAI directly
+    const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model: "gpt-4o",
+            query: query
+        })
+    });
     }
 
     const data = await response.json();
