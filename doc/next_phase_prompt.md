@@ -13,7 +13,11 @@ This document outlines the immediate next steps following the initial implementa
 
 **Next Step:** Final validation requires testing in a Vercel deployment environment, as local simulation might differ.
 
-## Priority 2: Deployment Planning & Execution (Vercel Focus) [Current Focus]
+## Priority 2: Implement Model Selection UI [DONE]
+
+**Status:** Added a dropdown in `src/pages/Result.tsx` allowing users to select the AI model before starting a chat. The `useChat` hook now sends the selected model identifier to the backend API.
+
+## Priority 3: Deployment Planning & Execution (Vercel Focus) [Current Focus]
 
 **Goal:** Deploy the application to Vercel and perform initial testing.
 
@@ -129,4 +133,4 @@ This document outlines the immediate next steps following the initial implementa
 
 ## Next Immediate Action
 
-User to proceed with **Priority 2: Deployment Planning & Execution**, specifically configuring environment variables and triggering a deployment on Vercel.
+User to proceed with **Priority 3: Deployment Planning & Execution**, specifically configuring environment variables and triggering a deployment on Vercel.

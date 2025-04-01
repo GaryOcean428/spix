@@ -26,12 +26,13 @@ This document outlines planned improvements and future directions for the Spix p
 
 1.  **Refactor Frontend API Call:** [DONE]
     *   Updated `src/pages/Result.tsx` to use the `useChat` hook pointing to `/api/generate`.
-2.  **Model Selection UI (Optional):** [DEFERRED]
-    *   Skipped for now. Currently defaults to `openai/gpt-4o` in `Result.tsx`. Can be added later.
+2.  **Model Selection UI:** [DONE]
+    *   Added dropdown in `Result.tsx` allowing users to select the AI model.
+    *   `useChat` hook updated to send the selected model to the backend.
 3.  **Vercel AI SDK / Responses API (Optional):** [DONE - Vercel AI SDK Implemented]
     *   Implemented Vercel AI SDK (`ai` package) for streaming and chat management.
 
-## Phase 4: Advanced Features & Deployment [IN PROGRESS]
+## Phase 4: Advanced Features & Deployment [PENDING]
 
 1.  **Streaming Responses:** [DONE]
     *   Implemented streaming in `api/generate.ts` using Vercel AI SDK stream helpers.
