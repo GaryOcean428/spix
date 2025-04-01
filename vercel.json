@@ -16,8 +16,9 @@
             "use": "@vercel/node"
         },
         {
-            "src": "src/**/*.tsx",
-            "use": "@vercel/node"
+            "src": "package.json",
+            "use": "@vercel/static-build",
+            "config": { "distDir": "build" }
         }
     ],
     "routes": [
