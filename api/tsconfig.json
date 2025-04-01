@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "composite": true, // Mark as part of a composite project
+    "rootDir": ".", // Specify root directory for inputs
+    /* Base Options */
+    // "esModuleInterop": true, // Removed as less relevant for ESNext modules
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "target": "ES2020", // Target modern Node.js versions
+    "allowJs": true, // Allow JavaScript files to be compiled
+    "resolveJsonModule": true, // Allow importing JSON files
+    "moduleDetection": "force", // Treat files as modules
+
+    /* Module Resolution */
+    "module": "ESNext", // Use modern ES modules
+    "moduleResolution": "Bundler", // Use modern bundler-oriented resolution
+
+    /* Strictness */
+    "strict": true, // Enable all strict type-checking options
+    "noUncheckedIndexedAccess": true, // Add index signature checks
+
+    /* Output */
+    "outDir": ".vercel/output/functions", // Vercel typically handles build output, but specifying can help locally
+    "sourceMap": true, // Generate source maps for debugging
+
+    /* Type Roots & Libs for Edge Runtime */
+    // "types": ["node", "@vercel/node"], // Not needed for edge runtime
+    "lib": ["ES2020", "DOM", "DOM.Iterable"] // Include necessary ES2020 and Web API library features for Edge
+  },
+  "include": ["./**/*.ts"], // Include all .ts files within the api directory
+  "exclude": ["node_modules"] // Exclude node_modules
+}

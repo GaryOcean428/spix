@@ -14,5 +14,14 @@ module.exports = {
       'warn',
       { allowConstantExport: true },
     ],
+    // Allow unused 'React' import due to new JSX transform
+    '@typescript-eslint/no-unused-vars': [
+      'warn', // or 'error'
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^React$', // Ignore 'React' specifically
+        caughtErrorsIgnorePattern: '^_',
+      },
+    ],
   },
 }
