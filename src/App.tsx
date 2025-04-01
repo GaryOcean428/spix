@@ -97,11 +97,7 @@ function App() {
   }, []);
 
   const onGoogleLoginSuccess = async (res: TokenResponse) => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log("Google Login Success Response:", res); // Log full response only in non-production
-    } else {
-      console.log("Google Login Successful with Google");
-    }
+    console.log("Google Login Success Response:", res); // Log the initial success response
     if (!res.access_token) {
       console.error("Google Login Success Response does not contain access_token");
       alert("Failed to complete login with Google. Please check console for details.");
