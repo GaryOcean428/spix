@@ -75,22 +75,39 @@ function App() {
   }, []);
 
   const onGoogleLoginSuccess = async (res: TokenResponse) => {
+    console.log("Google Login Success Response:", res); // Log the initial success response
     if (authType == "login") {
       setShowModal(false);
 
       try {
+        console.log("Attempting to fetch Google People API for login...");
         const response = await fetch('https://people.googleapis.com/v1/people/me?personFields=names,photos', {
           headers: {
             'Authorization': `Bearer ${res.access_token}`
           }
         });
+        console.log("Google People API Response Status:", response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Google People API Error Response:", errorText);
+          throw new Error(`Google People API request failed with status ${response.status}`);
+        }
 
         const data = await response.json();
+        console.log("Google People API Data:", data); // Log the fetched data
+
+        // Basic check for expected data structure
+        if (!data || !data.names || data.names.length === 0 || !data.photos || data.photos.length === 0) {
+          console.error("Unexpected data structure from Google People API:", data);
+          throw new Error("Received incomplete user data from Google People API");
+        }
 
         let user = {
           name: data.names[0].displayName,
-          avatar: data.photos[0].url
+          avatar: data.photos[0].url,
         };
+        console.log("User object created (login):", user);
 
         setUser(user);
 
@@ -101,43 +118,61 @@ function App() {
 
         setIsProfileSetup(true);
         setIsLoggedIn(true);
+        console.log("Login successful, state updated.");
       } catch (e) {
-        console.error(e);
-        alert("Failed to login with Google");
+        console.error("Error during Google login fetch/processing:", e); // Log the specific error
+        alert("Failed to complete login with Google. Please check console for details.");
       }
     }
     if (authType == "signup") {
       setShowModal(false);
       try {
+        console.log("Attempting to fetch Google People API for signup...");
         const response = await fetch('https://people.googleapis.com/v1/people/me?personFields=names,photos', {
           headers: {
             'Authorization': `Bearer ${res.access_token}`
           }
         });
+        console.log("Google People API Response Status:", response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Google People API Error Response:", errorText);
+          throw new Error(`Google People API request failed with status ${response.status}`);
+        }
 
         const data = await response.json();
+        console.log("Google People API Data:", data); // Log the fetched data
+
+        // Basic check for expected data structure
+        if (!data || !data.names || data.names.length === 0 || !data.photos || data.photos.length === 0) {
+          console.error("Unexpected data structure from Google People API:", data);
+          throw new Error("Received incomplete user data from Google People API");
+        }
 
         let user = {
           name: data.names[0].displayName,
-          avatar: data.photos[0].url
+          avatar: data.photos[0].url,
         };
+        console.log("User object created (signup):", user);
 
         setUser(user);
 
         localStorage.setItem("user", JSON.stringify(user));
         setShowProfileSetup(true);
+        console.log("Signup successful, proceeding to profile setup.");
 
       } catch (e) {
-        console.error(e);
-        alert("Failed to login with Google");
+        console.error("Error during Google signup fetch/processing:", e); // Log the specific error
+        alert("Failed to complete signup with Google. Please check console for details.");
       }
     }
-    console.log(res);
+    // console.log(res); // Already logged at the start of the function
   }
 
-  const onGoogleLoginFailure = () => {
-    console.error("Failed to login with Google");
-    alert("Failed to login with Google");
+  const onGoogleLoginFailure = (error: any) => { // Add error parameter
+    console.error("Google Login Failure Callback Triggered. Error:", error); // Log the specific error object
+    alert("Failed to login with Google. Please check console for details.");
   }
 
   return (
