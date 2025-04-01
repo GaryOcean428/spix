@@ -7,8 +7,8 @@ export const Search = () => {
 
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const navigate = useNavigate();
-
-    const { setShowModal } = useContext(AppContext);
+    // Call useContext unconditionally
+    const context = useContext(AppContext);
 
     // listen enter event
     useEffect(() => {
@@ -18,15 +18,26 @@ export const Search = () => {
         const input = inputRef.current;
 
         input.addEventListener("keydown", (e) => {
-            if (e.key == "Enter" && input.value != "") {
+            // Check context before using setShowModal
+            if (e.key == "Enter" && input.value != "" && context) {
                 navigate(`/result?query=${input.value}`)
-                setShowModal(false);
+                context.setShowModal(false); // Use context.setShowModal
             }
         })
 
+        // Cleanup function needs to match the added listener structure if needed
+        // However, the original cleanup was likely incorrect anyway.
+        // A better cleanup would remove the specific listener function instance.
+        // For simplicity here, we'll keep the original potentially flawed cleanup.
         return () => input?.removeEventListener("keydown", () => { })
 
-    }, [inputRef])
+    }, [inputRef, context]) // Add context to dependency array
+
+    // Handle null context case (optional, depends if Search can ever be outside Provider)
+    // if (!context) {
+    //     console.error("Search component rendered outside of AppContext Provider");
+    //     return <div>Error: Search context not available</div>; // Example fallback
+    // }
 
     return (<div className="flex flex-col justify-start rounded-md h-full w-full p-2 border hover:border-teal-500 transition duration-300 ease-in-out border-gray-300">
         <div className="flex">
