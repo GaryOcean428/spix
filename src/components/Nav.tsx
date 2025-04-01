@@ -10,23 +10,47 @@ type Profile = {
 
 export const Nav = () => {
 
-    const { setShowModal, setAuthType, isLoggedIn, setIsLoggedIn, isProfileSetup, setIsProfileSetup } = useContext(AppContext);
+    const context = useContext(AppContext);
     const navigate = useNavigate();
-
-    const [profile, setProfile] = useState<Profile>();
+    // Call hooks unconditionally at the top level
+    const [profile, setProfile] = useState<Profile | null>(null); // Allow null initial state
 
     useEffect(() => {
-        if (isProfileSetup) {
-            setProfile(JSON.parse(localStorage.getItem("user")!));
+        // Access context properties only if context is not null
+        if (context?.isProfileSetup) {
+            const userString = localStorage.getItem("user");
+            if (userString) {
+                try {
+                    setProfile(JSON.parse(userString));
+                } catch (e) {
+                    console.error("Failed to parse user from localStorage:", e);
+                    // Optionally clear corrupted data
+                    // localStorage.removeItem("user");
+                }
+            }
+        } else {
+            setProfile(null); // Clear profile if not setup
         }
-    }, [isProfileSetup])
+        // Depend on context?.isProfileSetup to re-run effect when context becomes available or changes
+    }, [context?.isProfileSetup]);
+
+    // Handle null context case within the return statement
+    if (!context) {
+        // This should ideally not happen if Nav is always within the Provider
+        console.error("Nav component rendered outside of AppContext Provider");
+        // Return a minimal fallback or null, ensuring no hooks were called conditionally before this point
+        return <div className="h-full w-min bg-[#f3f3ee] p-2"></div>; // Example fallback
+    }
+
+    // Destructure context properties now that we know context is not null
+    const { setShowModal, setAuthType, isLoggedIn, setIsLoggedIn, isProfileSetup, setIsProfileSetup } = context;
 
     return (
         <div className="h-full w-min bg-[#f3f3ee] p-2 flex flex-col justify-between">
             <nav className="space-y-2 p-4 ">
                 <header className="flex space-y-2 flex-col">
-                    <span>
-                        Perplexity
+                    <span className="font-semibold text-lg"> {/* Added some styling */}
+                        Spix
                     </span>
                     <button onClick={() => {
                         setShowModal(true);
@@ -100,9 +124,10 @@ export const Nav = () => {
                         </button>
                     </div>
                 </div>
-                {isProfileSetup && <div className="flex space-x-3 p-2 items-center cursor-pointer rounded-md hover:bg-gray-200 transition ease-in-out duration-300">
-                    <img className="aspect-square rounded-full w-8" referrerPolicy="no-referrer" src={profile?.avatar} />
-                    <span className="font-bold text-md">{profile?.name}</span>
+                {/* Use isLoggedIn as well, profile might exist briefly before logout state updates */}
+                {isLoggedIn && isProfileSetup && profile && <div className="flex space-x-3 p-2 items-center cursor-pointer rounded-md hover:bg-gray-200 transition ease-in-out duration-300">
+                    <img className="aspect-square rounded-full w-8" referrerPolicy="no-referrer" src={profile.avatar || '/vite.svg'} /> {/* Added fallback */}
+                    <span className="font-bold text-md">{profile.name}</span>
                 </div>}
                 <div className="py-2 space-y-4">
 
