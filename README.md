@@ -1,27 +1,24 @@
-# React + TypeScript + Vite
+# Spix
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Spix is a web application designed to provide an interactive experience with various AI models, allowing users to ask questions and receive informative answers.
 
-Currently, two official plugins are available:
+It leverages modern web technologies including React, TypeScript, and Vite, and integrates with AI APIs (currently OpenAI).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+*   User authentication via Google OAuth.
+*   Interface for submitting queries to AI models.
+*   Displaying AI-generated results.
+*   Basic conversation history stored in localStorage.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Development
 
-- Configure the top-level `parserOptions` property like this:
+This project uses Vite for development and building.
 
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
-```
+*   **Install dependencies:** `npm install`
+*   **Run development server:** `npm run dev`
+*   **Build for production:** `npm run build`
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+## Roadmap
+
+See [doc/roadmap.md](doc/roadmap.md) for planned future improvements, including multi-model support and migration to newer AI SDKs.

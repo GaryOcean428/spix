@@ -49,8 +49,8 @@ export const Nav = () => {
         <div className="h-full w-min bg-[#f3f3ee] p-2 flex flex-col justify-between">
             <nav className="space-y-2 p-4 ">
                 <header className="flex space-y-2 flex-col">
-                    <span>
-                        Perplexity
+                    <span className="font-semibold text-lg"> {/* Added some styling */}
+                        Spix
                     </span>
                     <button onClick={() => {
                         setShowModal(true);
