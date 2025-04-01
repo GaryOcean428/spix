@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useEffect, useState } from "react"; // Re-added React import
+// Removed unused FontAwesomeIcon import
 import { useLocation } from "react-router-dom";
 import { Button } from "../components/Button";
 import { useChat } from 'ai/react'; // Import useChat

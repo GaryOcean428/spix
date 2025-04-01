@@ -1,4 +1,4 @@
-import React, { FC } from "react"; // Added React import and combined FC
+import React, { FC } from "react"; // Import React and FC together
 import { IconProp } from "@fortawesome/fontawesome-svg-core"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 
