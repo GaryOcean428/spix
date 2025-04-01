@@ -11,10 +11,32 @@ import { Result } from './pages/Result';
 import { Library } from './pages/Library';
 import { ProfileSetup } from './components/ProfileSetup';
 
-export const AppContext = React.createContext<any>({});
+// Define types/interfaces
+interface User {
+  name: string;
+  avatar?: string; // Make avatar optional to handle potential undefined state during profile setup input change
+}
+
+interface AppContextValue {
+  authType: "login" | "signup" | "";
+  isLoggedIn: boolean;
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  isProfileSetup: boolean;
+  setIsProfileSetup: React.Dispatch<React.SetStateAction<boolean>>;
+  setAuthType: React.Dispatch<React.SetStateAction<"login" | "signup" | "">>;
+  showModal: boolean;
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+interface AuthModalProps {
+  onGoogleLoginSuccess: (res: TokenResponse) => Promise<void>;
+  onGoogleLoginFailure: (error?: unknown) => void; // Use unknown instead of any
+}
+
+export const AppContext = React.createContext<AppContextValue | null>(null); // Use defined type, default to null
 
 
-const AuthModal = ({ onGoogleLoginSuccess, onGoogleLoginFailure }: any) => {
+const AuthModal = ({ onGoogleLoginSuccess, onGoogleLoginFailure }: AuthModalProps) => { // Use defined props type
 
   const login = useGoogleLogin({
     onSuccess: onGoogleLoginSuccess,
@@ -49,9 +71,9 @@ function App() {
 
   const [showProfileSetup, setShowProfileSetup] = useState(false);
 
-  const [isProfileSetup, setIsProfileSetup] = useState(localStorage.getItem("isProfileSetup") == "true");
+  const [isProfileSetup, setIsProfileSetup] = useState(localStorage.getItem("isProfileSetup") === "true"); // Use ===
 
-  const [user, setUser] = useState<any>();
+  const [user, setUser] = useState<User | null>(null); // Use defined User type, default null
 
   useEffect(() => {
 
@@ -103,15 +125,17 @@ function App() {
           throw new Error("Received incomplete user data from Google People API");
         }
 
-        let user = {
+        // Use const as the object itself isn't reassigned here
+        const userResult: User = {
           name: data.names[0].displayName,
           avatar: data.photos[0].url,
         };
-        console.log("User object created (login):", user);
+        console.log("User object created (login):", userResult);
 
-        setUser(user);
+        setUser(userResult); // Set the user state with the fetched result
 
-        localStorage.setItem("user", JSON.stringify(user));
+        // Removed duplicate setUser(user) call
+        localStorage.setItem("user", JSON.stringify(userResult)); // Use userResult here
 
         localStorage.setItem("isProfileSetup", "true");
         localStorage.setItem("isLoggedIn", "true");
@@ -150,15 +174,17 @@ function App() {
           throw new Error("Received incomplete user data from Google People API");
         }
 
-        let user = {
+        // Use const as the object itself isn't reassigned here
+        const userResult: User = {
           name: data.names[0].displayName,
           avatar: data.photos[0].url,
         };
-        console.log("User object created (signup):", user);
+        console.log("User object created (signup):", userResult);
 
-        setUser(user);
+        setUser(userResult); // Set the user state with the fetched result
 
-        localStorage.setItem("user", JSON.stringify(user));
+        // Removed duplicate setUser(user) call
+        localStorage.setItem("user", JSON.stringify(userResult)); // Use userResult here
         setShowProfileSetup(true);
         console.log("Signup successful, proceeding to profile setup.");
 
@@ -170,7 +196,8 @@ function App() {
     // console.log(res); // Already logged at the start of the function
   }
 
-  const onGoogleLoginFailure = (error: any) => { // Add error parameter
+  // Use unknown for better type safety if error structure isn't guaranteed
+  const onGoogleLoginFailure = (error?: unknown) => {
     console.error("Google Login Failure Callback Triggered. Error:", error); // Log the specific error object
     alert("Failed to login with Google. Please check console for details.");
   }
@@ -185,7 +212,7 @@ function App() {
       setAuthType,
       showModal,
       setShowModal
-    }
+    } as AppContextValue // Assert type for provider value
     }>
       <BrowserRouter>
         <section className="flex h-screen w-screen">
@@ -208,14 +235,18 @@ function App() {
               <span className="font-bold text-4xl p-5">Create your account</span>
               <div className="flex flex-col space-y-2">
                 <span>Avatar</span>
-                <img className="aspect-square rounded-full w-8" referrerPolicy="no-referrer" src={user?.avatar} />
+                {/* Provide a fallback or handle missing avatar */}
+                <img className="aspect-square rounded-full w-8" referrerPolicy="no-referrer" src={user?.avatar || '/vite.svg'} /> {/* Added fallback */}
               </div>
               <div className="flex flex-col space-y-2">
                 <span>Username</span>
                 <div className="bg-white p-2 rounded-lg border border-gray-200 hover:border-teal-500 transition ease-in-out duration-300 ">
                   <input onChange={(e) => {
-                    setUser({ ...user, name: e.target.value });
-                  }} className="w-full border-none outline-none" placeholder="Enter your username" value={user?.name} />
+                    // Ensure user is not null before spreading
+                    if (user) {
+                      setUser({ ...user, name: e.target.value });
+                    }
+                  }} className="w-full border-none outline-none" placeholder="Enter your username" value={user?.name || ''} /> {/* Handle potential null user */}
                 </div>
               </div>
             </div>
