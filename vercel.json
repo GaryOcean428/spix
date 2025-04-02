@@ -97,10 +97,9 @@
         },
         {
             "source": "/(.*)",
-            "destination": "https://vercel.com/docs"
-        },
-        {
-            "source": "/blog/:path*",
+            "redirects": [
+                { "source": "/me", "destination": "/profile.html", "permanent": true },
+                { "source": "/user", "destination": "/api/user", "statusCode": 301 },
             "destination": "/news/:path*"
         },
         {
