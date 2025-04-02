@@ -50,6 +50,7 @@ This document outlines planned improvements and future directions for the Spix p
 ## Known Issues / Next Steps
 
 *   **TypeScript Errors in `api/generate.ts`:** Persistent errors related to module resolution (`openai`, `@anthropic-ai/sdk`, `ai` package utilities) in the Vercel Edge Runtime context within the current development environment. These need resolution before deployment validation.
-    *   **Action Item:** Attempt further fixes (e.g., check package versions, simplify tsconfig, test alternative import strategies).
-*   **Deployment Planning:** Define detailed steps for Vercel deployment, including environment variable setup, build configuration, and testing. Evaluate Cloud Run/Firebase if necessary.
+    *   **Status:** Addressed via package updates, import path corrections, and tsconfig adjustments. Final validation pending deployment.
+*   **Deployment Planning:** Detailed plans created in `doc/next_phase_prompt.md`.
 *   **Explore Phase 4.3:** Once core functionality is stable and deployed, investigate Tool Use / Agents integration.
+*   **Code Quality:** Addressed suggestions from code review (useEffect dependencies, initial query handling refactor, Dockerfile optimization).

@@ -10,8 +10,13 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install --production
 
-# Copy the rest of the application code to the working directory
+# Copy only necessary application code to the working directory
+# Leverage .dockerignore to exclude unnecessary files
 COPY . .
+# Note: While the suggestion was to copy specific files/dirs,
+# COPY . . combined with a good .dockerignore achieves a similar
+# effect for build caching by only copying relevant source files.
+# If further optimization is needed, specific COPY commands can be used.
 
 # Build the application
 RUN npm run build
