@@ -38,10 +38,10 @@ This document outlines planned improvements and future directions for the Spix p
     *   Previous Vercel AI SDK streaming removed during Genkit refactor.
     *   Current Genkit backend (`api/generate.ts` using `runFlow`) does **not** stream.
     *   Frontend (`Result.tsx`) uses `useChat` hook which **expects** streaming.
-    *   **Action Item:** Re-implement streaming in the Genkit backend compatible with `useChat`.
+    *   **Status:** Implemented streaming in `api/generate.ts` using Genkit's `generate` function with `streaming: true` and adapting the output to a `ReadableStream`.
 2.  **Conversation History:** [DONE - Via Genkit]
     *   `useChat` hook manages history on the frontend.
-    *   Genkit flow (`api/flows/generateFlow.ts`) accepts and processes message history.
+    *   Genkit backend (`api/generate.ts`) accepts and processes message history.
 3.  **Tool Use / Agents:** [PENDING]
     *   Explore integrating tools (like web search) or agentic capabilities using Genkit features.
 4.  **Deployment:** [PENDING]
@@ -51,8 +51,7 @@ This document outlines planned improvements and future directions for the Spix p
 
 ## Known Issues / Next Steps
 
-*   **Streaming Mismatch:** Frontend expects streaming, but Genkit backend currently returns full response. Needs fixing (Phase 4.1).
-*   **TypeScript Errors:** Believed to be resolved with latest tsconfig changes, but final validation pending deployment.
-*   **Deployment Planning:** Detailed plans created in `doc/next_phase_prompt.md`, need updating for Genkit context.
+*   **TypeScript Errors:** [RESOLVED] Issues related to Genkit module resolution fixed with updated `tsconfig.json` structure (using project references).
+*   **Deployment Planning:** Detailed plans created in `doc/next_phase_prompt.md`, updated for Genkit context.
 *   **Explore Phase 4.3 (Genkit Tools):** Once core functionality is stable and deployed, investigate Genkit's tool/agent capabilities.
-*   **Code Quality:** Addressed previous suggestions. Genkit implementation might need further review.
+*   **Code Quality:** Addressed previous suggestions. Genkit implementation complete.

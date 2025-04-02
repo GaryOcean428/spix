@@ -1,29 +1,19 @@
 {
+  "extends": "../tsconfig.json", // Extend the root config
   "compilerOptions": {
     "composite": true, // Required for project references
-    /* Target modern Node.js/Vercel runtimes */
-    "target": "ES2020",
-    "module": "NodeNext", // Use NodeNext for modern ESM/CJS interop in Node
-    "moduleResolution": "NodeNext", // Required with module: NodeNext
-    "lib": ["ES2020", "DOM", "DOM.Iterable"], // Include DOM for Web APIs (Request/Response)
-
-    /* Interop and Strictness */
-    "esModuleInterop": true,
-    "strict": true,
-    "skipLibCheck": true, // Skip checking library files for speed
-    "forceConsistentCasingInFileNames": true,
-
-    /* Output and Resolution */
-    "resolveJsonModule": true,
-    "outDir": "./.vercel/output/functions/api", // Define specific output (Vercel might override)
+    "module": "NodeNext", // Override for Node.js/Genkit
+    "moduleResolution": "NodeNext", // Override for Node.js/Genkit
+    "outDir": "./.vercel/output/functions/api", // Specific output for API
     "rootDir": ".", // Root is the 'api' directory
-    "sourceMap": true, // Enable source maps for debugging
-    "allowJs": true // Allow JS files if needed
+    "noEmit": false, // Override: We need to emit JS for the API route
+    "isolatedModules": false, // Override: Not needed/potentially harmful for API build
+    "lib": ["ES2020", "DOM", "DOM.Iterable"], // Ensure necessary libs are present
+    "sourceMap": true,
+    "allowJs": true,
+    "allowImportingTsExtensions": false // Override inherited setting
   },
-  "include": ["./**/*.ts"], // Include all TS files within the 'api' directory
+  "include": ["./**/*.ts"], // Only include files within the 'api' directory
   "exclude": ["node_modules"],
-  "ts-node": { // Configuration for ts-node if used locally (optional)
-    "esm": true,
-    "experimentalSpecifierResolution": "node"
-  }
+  "references": [] // Override: This config doesn't reference others
 }
