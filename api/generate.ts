@@ -1,95 +1,133 @@
-import { OpenAI } from 'openai'; // Keep base client for potential direct use if needed
-import { Anthropic } from '@anthropic-ai/sdk'; // Keep base client
-import { GoogleGenerativeAI } from '@google/generative-ai'; // Keep base client
+import { initGenkit, ModelReference } from '@genkit-ai/core'; // Try core again
+import { generate, MessageData } from '@genkit-ai/ai'; // AI functions/types
+import config from './genkit.config'; // Genkit configuration
+import { z } from 'zod'; // Input validation
+import { Message as VercelChatMessage } from 'ai'; // Vercel AI SDK message type
 
-// Import AI SDK core functions and types (remove StreamingTextResponse)
-import { streamText, Message as VercelChatMessage } from 'ai';
+// Import model provider factories as DEFAULT exports
+import openaiModel from '@genkit-ai/openai';
+import anthropicModel from '@genkit-ai/anthropic';
+import googleAIModel from '@genkit-ai/googleai';
 
-// Import provider adapter creation functions
-import { createOpenAI } from '@ai-sdk/openai';
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { createGoogleGenerativeAI as createGoogle } from '@ai-sdk/google'; // Alias for clarity
+// Initialize Genkit
+initGenkit(config);
 
-// Initialize provider adapters - Ensure API keys are set in Vercel environment variables
-const openaiAdapter = process.env.OPENAI_API_KEY ? createOpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
-const anthropicAdapter = process.env.ANTHROPIC_API_KEY ? createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
-const googleAdapter = process.env.GOOGLE_API_KEY ? createGoogle({ apiKey: process.env.GOOGLE_API_KEY }) : null;
+// Define the expected request body structure for validation
+const RequestBodySchema = z.object({
+  messages: z.array(
+    z.object({
+      role: z.enum(['user', 'assistant', 'system', 'tool']),
+      content: z.string(),
+    })
+  ),
+  model: z.string(),
+});
 
-export const config = {
-  runtime: 'edge', // Use edge runtime for Vercel AI SDK streaming
-};
-
-// Define the expected request body structure
-interface RequestBody {
-  messages: VercelChatMessage[]; // Expect an array of messages
-  model: string; // e.g., "openai/gpt-4o", "anthropic/claude-3-7-sonnet-20250219", "google/gemini-2.5-pro-exp-03-25"
+// Helper function to convert Vercel AI SDK message roles to Genkit roles
+function toGenkitRole(role: 'user' | 'assistant' | 'system' | 'tool'): 'user' | 'model' | 'system' | 'tool' {
+    if (role === 'assistant') return 'model';
+    // Genkit uses 'tool' role for tool messages
+    if (role === 'tool') return 'tool';
+    if (role === 'user') return 'user';
+    if (role === 'system') return 'system';
+    // Fallback (shouldn't happen with schema validation)
+    console.warn(`Unsupported role encountered in mapping: ${role}, defaulting to 'user'`);
+    return 'user';
 }
 
-export default async function handler(req: Request) { // Use standard Request object for edge runtime
+export default async function handler(req: Request) {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { status: 405, headers: { 'Content-Type': 'application/json' } });
   }
 
   try {
-    const { messages, model: modelIdentifier } = (await req.json()) as RequestBody;
-
-    if (!messages || messages.length === 0 || !modelIdentifier) {
-      return new Response(JSON.stringify({ error: 'Missing messages or model in request body' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    const requestBody = await req.json();
+    // Validate request body
+    const validationResult = RequestBodySchema.safeParse(requestBody);
+    if (!validationResult.success) {
+        return new Response(JSON.stringify({ error: 'Invalid request body', details: validationResult.error.format() }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
+    const { messages, model: modelIdentifier } = validationResult.data;
 
     const [providerName, modelName] = modelIdentifier.split('/');
-
     if (!providerName || !modelName) {
       return new Response(JSON.stringify({ error: 'Invalid model format. Expected "provider/modelName"' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    let providerAdapter: any = null; // Use 'any' for now, refine if possible
-    let resolvedModelName = modelName; // Model name might need adjustment for some providers
+    let selectedModelProvider: any; // The imported provider factory
 
+    // Select the Genkit model provider factory
     switch (providerName.toLowerCase()) {
       case 'openai':
-        if (!openaiAdapter) {
-          return new Response(JSON.stringify({ error: 'OpenAI provider not configured on server.' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-        }
-        providerAdapter = openaiAdapter;
-        resolvedModelName = modelName; // Use just the name part
+        selectedModelProvider = openaiModel;
         break;
-
       case 'anthropic':
-         if (!anthropicAdapter) {
-           return new Response(JSON.stringify({ error: 'Anthropic provider not configured on server.' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-         }
-         providerAdapter = anthropicAdapter;
-         resolvedModelName = modelName; // Use just the name part
-         break;
-
-      case 'google':
-        if (!googleAdapter) {
-          return new Response(JSON.stringify({ error: 'Google provider not configured on server.' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-        }
-        providerAdapter = googleAdapter;
-        resolvedModelName = modelName; // Use just the name part, e.g., "gemini-2.5-pro-exp-03-25"
+        selectedModelProvider = anthropicModel;
         break;
-
+      case 'google':
+        selectedModelProvider = googleAIModel;
+        break;
       default:
         return new Response(JSON.stringify({ error: `Unsupported provider: ${providerName}` }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Use streamText with the selected provider adapter instance and the resolved model name string
-    const result = await streamText({
-      model: providerAdapter(resolvedModelName), // Pass model name string to the adapter instance
-      messages: messages,
-      // Add other parameters like temperature, maxTokens if needed and supported by streamText/adapter
-      // e.g., temperature: 0.7
+    if (!selectedModelProvider) {
+        return new Response(JSON.stringify({ error: `Failed to find model provider for: ${providerName}` }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Construct the specific model reference
+    const specificModelRef: ModelReference<any> = selectedModelProvider(modelName);
+
+    // Prepare messages for Genkit
+    const genkitMessages: MessageData[] = messages.map(msg => ({
+        role: toGenkitRole(msg.role),
+        content: [{ text: msg.content }],
+    }));
+
+    // Call generate with streaming option in an options object
+    const generateResponseStream = await generate({ // Assume generate returns the stream directly
+        model: specificModelRef,
+        prompt: genkitMessages,
+        streaming: true,
+        // config: { temperature: 0.7 },
     });
 
-    // Respond with the stream using the correct method
-    return result.toDataStreamResponse();
+    // Adapt Genkit's stream (assuming it's the direct response) to a Web ReadableStream
+    const readableStream = new ReadableStream({
+        async start(controller) {
+            try {
+                // Iterate directly over the response from generate
+                for await (const chunk of generateResponseStream) {
+                    const text = chunk.text();
+                    if (text) {
+                        controller.enqueue(new TextEncoder().encode(text));
+                    }
+                }
+                controller.close();
+            } catch (error: any) {
+                console.error('Error reading from Genkit stream:', error);
+                controller.error(new Error(`Error streaming from Genkit: ${error.message}`));
+            }
+        }
+    });
+
+    // Return the stream in a standard Response object
+    return new Response(readableStream, {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
 
   } catch (error: any) {
-    console.error('Error in /api/generate handler:', error);
-    // Ensure a Response object is returned in case of errors
+    console.error('Error in API handler:', error);
     const errorMessage = error.message || 'Unknown internal server error';
-    return new Response(JSON.stringify({ error: `Internal Server Error: ${errorMessage}` }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    const details = error.details || error.cause;
+    return new Response(JSON.stringify({
+        error: `Internal Server Error: ${errorMessage}`,
+        ...(details && { details: details })
+    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
+
+// export const config = {
+//   runtime: 'edge', // Re-evaluate if edge is compatible with all Genkit plugins/features
+// };

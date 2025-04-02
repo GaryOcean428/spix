@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef } from "react";
 import { Button } from "./Button"
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../App";
+import React from "react";
 
 export const Search = () => {
 
