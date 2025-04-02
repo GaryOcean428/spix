@@ -98,6 +98,11 @@ function App() {
 
   const onGoogleLoginSuccess = async (res: TokenResponse) => {
     console.log("Google Login Success Response:", res); // Log the initial success response
+    if (!res.access_token) {
+      console.error("Google Login Success Response does not contain access_token");
+      alert("Failed to complete login with Google. Please check console for details.");
+      return;
+    }
     if (authType == "login") {
       setShowModal(false);
 
