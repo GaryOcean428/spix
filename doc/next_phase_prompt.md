@@ -1,25 +1,26 @@
-# Next Phase Plan: Resolve Issues & Prepare for Deployment
+# Next Phase Plan: Deploy Genkit Backend
 
-This document outlines the immediate next steps following the initial implementation phase based on `roadmap.md`.
+This document outlines the immediate next steps following the implementation of the Genkit backend.
 
-## Priority 1: Resolve TypeScript Errors in `api/generate.ts` [Likely Resolved]
+## Priority 1: Implement Genkit Backend [DONE]
 
-**Status:** Errors related to module resolution for AI SDKs (`openai`, `@anthropic-ai/sdk`) and Vercel AI SDK utilities (`...Stream`, `StreamingTextResponse`) have been addressed by:
-    *   Ensuring all necessary base SDKs (`openai`, `@anthropic-ai/sdk`) are installed and listed in `package.json`.
-    *   Installing provider-specific Vercel AI SDK packages (`@ai-sdk/openai`, `@ai-sdk/anthropic`, `@ai-sdk/google`).
-    *   Correcting import paths to use the provider-specific packages for stream functions (`OpenAIStream`, etc.) and `@ai-sdk/provider-utils` for `StreamingTextResponse`.
-    *   Refactoring the API handler to use the `streamText` function with provider adapters.
-    *   Adjusting `api/tsconfig.json` for the edge runtime.
+**Status:**
+*   Installed `genkit` and provider plugins.
+*   Created Genkit configuration (`api/genkit.config.ts`).
+*   Implemented multi-provider logic directly in the Vercel API route (`api/generate.ts`) using Genkit's `generate` function.
+*   Resolved TypeScript configuration issues using project references and appropriate settings in `tsconfig.json` and `api/tsconfig.json`.
 
-**Next Step:** Final validation requires testing in a Vercel deployment environment, as local simulation might differ.
+**Next Step:** Final validation requires testing in a Vercel deployment environment. The Vite dev server currently returns a 404 for `/api/generate` because it's not configured to run the Genkit backend; Vercel deployment handles this automatically.
 
-## Priority 2: Implement Model Selection UI [DONE]
+## Priority 2: Re-implement Streaming for Genkit Backend [DONE]
 
-**Status:** Added a dropdown in `src/pages/Result.tsx` allowing users to select the AI model before starting a chat. The `useChat` hook now sends the selected model identifier to the backend API.
+**Status:**
+*   Refactored `api/generate.ts` to use `generate({ ..., streaming: true })`.
+*   Adapted the output stream from Genkit's `generate` function into a standard Web `ReadableStream` suitable for the frontend's `useChat` hook.
 
 ## Priority 3: Deployment Planning & Execution (Vercel Focus) [Current Focus]
 
-**Goal:** Deploy the application to Vercel and perform initial testing.
+**Goal:** Deploy the Genkit-based application to Vercel and perform initial testing.
 
 **Steps:**
 1.  **Environment Variables:**
@@ -51,9 +52,9 @@ This document outlines the immediate next steps following the initial implementa
 *   **Resolving TS Errors:** [DONE - Pending Deployment Validation]
 *   **Vercel Deployment & Initial Testing:** 0.5 - 1 hour (User task - assuming Vercel setup is straightforward).
 
-## Priority 3: Alternative Deployment Investigation (Cloud Run / Firebase) - [Deferred - Detailed Plan Below]
+## Priority 4: Alternative Deployment Investigation (Cloud Run / Firebase) - [Deferred - Detailed Plan Below]
 
-**Goal:** Outline the steps, criteria, and estimates for deploying Spix to Google Cloud (Cloud Run for backend, Firebase Hosting for frontend) if Vercel is not used.
+**Goal:** Outline the steps, criteria, and estimates for deploying the Genkit-based Spix backend to Google Cloud (Cloud Run) and frontend to Firebase Hosting if Vercel is not used.
 
 **Detailed Steps:**
 

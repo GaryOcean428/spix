@@ -24,11 +24,11 @@ export const Result = () => {
 
     const [title, setTitle] = useState<string>(initialQuery || "New Chat"); // Set initial title
     const [selectedModel, setSelectedModel] = useState<string>(availableModels[0].id); // State for selected model
+    const initialQueryProcessed = React.useRef(false); // Ref to track if initial query was processed
 
-    // Use the useChat hook
-    const { messages, input, handleInputChange, handleSubmit, isLoading, error, setMessages } = useChat({
+    // Use the useChat hook, get append function
+    const { messages, input, handleInputChange, handleSubmit, isLoading, error, setMessages, append } = useChat({
         api: '/api/generate', // Point to our backend route
-        // We can add initialMessages or id later if needed for history
         // Send model in the body dynamically
         body: {
             model: selectedModel // Use state variable for model
@@ -41,31 +41,24 @@ export const Result = () => {
 
     // Effect to handle the initial query from URL params
     // This effect runs once when the component mounts or initialQuery changes.
-    // It simulates the initial message exchange if an initialQuery exists.
+    // It triggers the API call for the initial query using the append function.
     useEffect(() => {
-        if (initialQuery && messages.length === 0 && !isLoading) {
-            // Add the user's initial query as the first message
-            // And trigger the API call by adding a placeholder assistant message
-            // that the hook will then try to complete.
-            // NOTE: This is a workaround. A cleaner way might involve modifying useChat
-            // or using its `append` function carefully after initial load.
-            setMessages([
-                { id: 'initial-user', role: 'user', content: initialQuery },
-                // Add a placeholder that handleSubmit would normally trigger
-                // This signals the hook to start fetching the response for the user message
-                { id: 'initial-assistant-placeholder', role: 'assistant', content: ''}
-            ]);
-            // We don't call handleSubmit here as setMessages triggers the flow
+        // Only process if there's an initial query, no messages yet, not loading, and not already processed
+        if (initialQuery && messages.length === 0 && !isLoading && !initialQueryProcessed.current && append) {
+            // Mark as processed to prevent re-triggering
+            initialQueryProcessed.current = true;
+            // Append the initial query as a user message, triggering the API call
+            append({ role: 'user', content: initialQuery });
         }
-        // Update title if query exists
+        // Update title if query exists (can run independently)
         if (initialQuery) {
             setTitle(initialQuery);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [initialQuery]); // Rerun only if initialQuery changes
+        // Dependencies: initialQuery, messages length (to detect when chat starts), isLoading, append, setTitle
+    }, [initialQuery, messages.length, isLoading, append, setTitle]);
 
-    // Filter out the placeholder message once the actual response starts streaming
-    const displayedMessages = messages.filter(m => m.id !== 'initial-assistant-placeholder');
+    // No need to filter placeholder messages anymore
+    const displayedMessages = messages;
 
     return (
         <section className="m-auto relative w-full min-h-screen items-start overflow-y-auto flex justify-center pb-40">
