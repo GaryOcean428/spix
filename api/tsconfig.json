@@ -1,31 +1,29 @@
 {
   "compilerOptions": {
-    "composite": true, // Mark as part of a composite project
-    "rootDir": ".", // Specify root directory for inputs
-    /* Base Options */
-    // "esModuleInterop": true, // Removed as less relevant for ESNext modules
-    "skipLibCheck": true, // Skip type checking of declaration files
-    "target": "ES2020", // Target modern Node.js versions
-    "allowJs": true, // Allow JavaScript files to be compiled
-    "resolveJsonModule": true, // Allow importing JSON files
-    "moduleDetection": "force", // Treat files as modules
+    "composite": true, // Required for project references
+    /* Target modern Node.js/Vercel runtimes */
+    "target": "ES2020",
+    "module": "NodeNext", // Use NodeNext for modern ESM/CJS interop in Node
+    "moduleResolution": "NodeNext", // Required with module: NodeNext
+    "lib": ["ES2020", "DOM", "DOM.Iterable"], // Include DOM for Web APIs (Request/Response)
 
-    /* Module Resolution */
-    "module": "ESNext", // Use modern ES modules
-    "moduleResolution": "Bundler", // Use modern bundler-oriented resolution
+    /* Interop and Strictness */
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true, // Skip checking library files for speed
+    "forceConsistentCasingInFileNames": true,
 
-    /* Strictness */
-    "strict": true, // Enable all strict type-checking options
-    "noUncheckedIndexedAccess": true, // Add index signature checks
-
-    /* Output */
-    "outDir": ".vercel/output/functions", // Vercel typically handles build output, but specifying can help locally
-    "sourceMap": true, // Generate source maps for debugging
-
-    /* Type Roots & Libs for Edge Runtime */
-    // "types": ["node", "@vercel/node"], // Not needed for edge runtime
-    "lib": ["ES2020", "DOM", "DOM.Iterable"] // Include necessary ES2020 and Web API library features for Edge
+    /* Output and Resolution */
+    "resolveJsonModule": true,
+    "outDir": "./.vercel/output/functions/api", // Define specific output (Vercel might override)
+    "rootDir": ".", // Root is the 'api' directory
+    "sourceMap": true, // Enable source maps for debugging
+    "allowJs": true // Allow JS files if needed
   },
-  "include": ["./**/*.ts"], // Include all .ts files within the api directory
-  "exclude": ["node_modules"] // Exclude node_modules
+  "include": ["./**/*.ts"], // Include all TS files within the 'api' directory
+  "exclude": ["node_modules"],
+  "ts-node": { // Configuration for ts-node if used locally (optional)
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  }
 }

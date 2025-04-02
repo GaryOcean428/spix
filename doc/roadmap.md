@@ -10,17 +10,17 @@ This document outlines planned improvements and future directions for the Spix p
     *   Ran `npm run lint` - no errors reported.
     *   Reviewed component structure - deemed acceptable for now.
 
-## Phase 2: Multi-Model Integration Backend [COMPLETED]
+## Phase 2: Multi-Model Integration Backend [REPLACED WITH GENKIT]
 
 1.  **Backend API Route:** [DONE]
-    *   Created `api/generate.ts` using Vercel's file-based routing convention.
+    *   Created `api/generate.ts` to act as entry point.
 2.  **Environment Variables:** [DONE - Conceptual]
-    *   Backend logic implemented to read `process.env.PROVIDER_API_KEY`. Actual keys need configuration during deployment.
-3.  **Provider Logic:** [DONE]
-    *   Implemented logic in `api/generate.ts` to handle requests based on `model` parameter (e.g., "openai/gpt-4o").
-    *   Uses respective SDKs (OpenAI, Anthropic, Google GenAI).
-4.  **Initial Model Support:** [DONE]
-    *   Added cases for OpenAI, Anthropic, and Google in `api/generate.ts`.
+    *   Genkit plugins configured in `api/genkit.config.ts` read keys from environment variables (`GOOGLE_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`). Keys need configuration during deployment.
+3.  **Provider Logic:** [DONE - Via Genkit]
+    *   Created Genkit flow `api/flows/generateFlow.ts`.
+    *   Flow selects appropriate Genkit model (`openaiModel`, `anthropicModel`, `googleAIModel`) based on input identifier.
+4.  **Initial Model Support:** [DONE - Via Genkit]
+    *   Configured plugins for OpenAI, Anthropic, and Google AI.
 
 ## Phase 3: Frontend Integration & Model Selection [COMPLETED]
 
@@ -32,25 +32,27 @@ This document outlines planned improvements and future directions for the Spix p
 3.  **Vercel AI SDK / Responses API (Optional):** [DONE - Vercel AI SDK Implemented]
     *   Implemented Vercel AI SDK (`ai` package) for streaming and chat management.
 
-## Phase 4: Advanced Features & Deployment [PENDING]
+## Phase 4: Advanced Features & Deployment [IN PROGRESS]
 
-1.  **Streaming Responses:** [DONE]
-    *   Implemented streaming in `api/generate.ts` using Vercel AI SDK stream helpers.
-    *   Frontend (`Result.tsx`) uses `useChat` hook which handles streaming display.
-2.  **Conversation History:** [DONE]
+1.  **Streaming Responses:** [BROKEN / PENDING RE-IMPLEMENTATION]
+    *   Previous Vercel AI SDK streaming removed during Genkit refactor.
+    *   Current Genkit backend (`api/generate.ts` using `runFlow`) does **not** stream.
+    *   Frontend (`Result.tsx`) uses `useChat` hook which **expects** streaming.
+    *   **Action Item:** Re-implement streaming in the Genkit backend compatible with `useChat`.
+2.  **Conversation History:** [DONE - Via Genkit]
     *   `useChat` hook manages history on the frontend.
-    *   Backend (`api/generate.ts`) updated to accept and process message history for context.
+    *   Genkit flow (`api/flows/generateFlow.ts`) accepts and processes message history.
 3.  **Tool Use / Agents:** [PENDING]
-    *   Explore integrating tools (like web search) or agentic capabilities using relevant SDKs.
+    *   Explore integrating tools (like web search) or agentic capabilities using Genkit features.
 4.  **Deployment:** [PENDING]
-    *   Ensure all backend and frontend changes are correctly configured and deployed on Vercel, including server-side environment variables.
-    *   **Action Item:** Define detailed deployment steps, success criteria, and benchmarks.
-    *   **Action Item:** Investigate Cloud Run/Firebase deployment feasibility if required (differs from current Vercel focus).
+    *   Ensure Genkit backend and frontend changes are correctly configured for Vercel deployment.
+    *   **Action Item:** Define detailed deployment steps, success criteria, and benchmarks (partially done in `next_phase_prompt.md`).
+    *   **Action Item:** Investigate Cloud Run/Firebase deployment feasibility for Genkit backend if required.
 
 ## Known Issues / Next Steps
 
-*   **TypeScript Errors in `api/generate.ts`:** Persistent errors related to module resolution (`openai`, `@anthropic-ai/sdk`, `ai` package utilities) in the Vercel Edge Runtime context within the current development environment. These need resolution before deployment validation.
-    *   **Status:** Addressed via package updates, import path corrections, and tsconfig adjustments. Final validation pending deployment.
-*   **Deployment Planning:** Detailed plans created in `doc/next_phase_prompt.md`.
-*   **Explore Phase 4.3:** Once core functionality is stable and deployed, investigate Tool Use / Agents integration.
-*   **Code Quality:** Addressed suggestions from code review (useEffect dependencies, initial query handling refactor, Dockerfile optimization).
+*   **Streaming Mismatch:** Frontend expects streaming, but Genkit backend currently returns full response. Needs fixing (Phase 4.1).
+*   **TypeScript Errors:** Believed to be resolved with latest tsconfig changes, but final validation pending deployment.
+*   **Deployment Planning:** Detailed plans created in `doc/next_phase_prompt.md`, need updating for Genkit context.
+*   **Explore Phase 4.3 (Genkit Tools):** Once core functionality is stable and deployed, investigate Genkit's tool/agent capabilities.
+*   **Code Quality:** Addressed previous suggestions. Genkit implementation might need further review.
