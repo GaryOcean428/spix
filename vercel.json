@@ -1,33 +1,4 @@
 {
-    "$schema": "https://openapi.vercel.sh/vercel.json",
-    "buildCommand": "next build",
-    "cleanUrls": true,
-    "crons": [
-        {
-            "path": "/api/every-minute",
-            "schedule": "* * * * *"
-        },
-        {
-            "path": "/api/every-hour",
-            "schedule": "0 * * * *"
-        },
-        {
-            "path": "/api/every-day",
-            "schedule": "0 0 * * *"
-        }
-    ],
-    "devCommand": "next dev",
-    "framework": "nextjs",
-    "headers": [
-        {
-            "source": "/service-worker.js",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "public, max-age=0, must-revalidate"
-                }
-            ]
-        },
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "cleanUrls": true,
@@ -46,6 +17,49 @@
     }
   ],
   "devCommand": "npm run dev",
+  "headers": [
+    {
+      "source": "/service-worker.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "query",
+          "key": "authorized"
+        }
+      ],
+      "headers": [
+        {
+          "key": "x-authorized",
+          "value": "true"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
@@ -72,150 +86,57 @@
       "src": "/api/(.*)",
       "dest": "/api/$1"
     }
-  ]
-    "rewrites": [
-        {
-            "source": "/(.*)",
-            "headers": [
-                {
-                    "key": "X-Content-Type-Options",
-                    "value": "nosniff"
-                },
-                {
-                    "key": "X-Frame-Options",
-                    "value": "DENY"
-                },
-                {
-                    "key": "X-XSS-Protection",
-                    "value": "1; mode=block"
-                }
-            ]
-        },
-        {
-            "source": "/:path*",
-            "has": [
-                {
-                    "type": "query",
-                    "key": "authorized"
-                }
-            ],
-            "headers": [
-                {
-                    "key": "x-authorized",
-                    "value": "true"
-                }
-            ]
-        }
+  ],
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./",
+  "installCommand": "npm install",
+  "images": {
+    "sizes": [256, 640, 1080, 2048, 3840],
+    "localPatterns": [{
+      "pathname": "^/assets/.*$",
+      "search": ""
+    }],
+    "remotePatterns": [
+      {
+        "protocol": "https",
+        "hostname": "example.com",
+        "port": "",
+        "pathname": "^/account123/.*$",
+        "search": "?v=1"
+      }
     ],
-    "ignoreCommand": "git diff --quiet HEAD^ HEAD ./",
-    "installCommand": "npm install",
-    "images": {
-        "sizes": [256, 640, 1080, 2048, 3840],
-        "localPatterns": [{
-            "pathname": "^/assets/.*$",
-            "search": ""
-        }],
-        "remotePatterns": [
-            {
-                "protocol": "https",
-                "hostname": "example.com",
-                "port": "",
-                "pathname": "^/account123/.*$",
-                "search": "?v=1"
-            }
-        ],
-        "minimumCacheTTL": 60,
-        "qualities": [25, 50, 75],
-        "formats": ["image/webp"],
-        "dangerouslyAllowSVG": false,
-        "contentSecurityPolicy": "script-src 'none'; frame-src 'none'; sandbox;",
-        "contentDispositionType": "inline"
+    "minimumCacheTTL": 60,
+    "qualities": [25, 50, 75],
+    "formats": ["image/webp"],
+    "dangerouslyAllowSVG": false,
+    "contentSecurityPolicy": "script-src 'none'; frame-src 'none'; sandbox;",
+    "contentDispositionType": "inline"
+  },
+  "outputDirectory": "build",
+  "public": true,
+  "redirects": [
+    { "source": "/me", "destination": "/profile.html", "permanent": false },
+    { "source": "/user", "destination": "/api/user", "statusCode": 301 },
+    {
+      "source": "/view-source",
+      "destination": "https://github.com/vercel/vercel"
     },
-    "outputDirectory": "build",
-    "public": true,
-    "redirects": [
-        { "source": "/me", "destination": "/profile.html", "permanent": false },
-        { "source": "/me", "destination": "/profile.html", "permanent": true },
-        { "source": "/user", "destination": "/api/user", "statusCode": 301 },
-        {
-            "source": "/view-source",
-            "destination": "https://github.com/vercel/vercel"
-        },
-        {
-            "source": "/(.*)",
-            "redirects": [
-                { "source": "/me", "destination": "/profile.html", "permanent": true },
-                { "source": "/user", "destination": "/api/user", "statusCode": 301 },
-            "destination": "/news/:path*"
-        },
-        {
-            "source": "/post/:path(\\d{1,})",
-            "destination": "/news/:path*"
-        },
-        {
-            "source": "/:path((?!uk/).*)",
-            "has": [
-                {
-                    "type": "header",
-                    "key": "x-vercel-ip-country",
-                    "value": "GB"
-                }
-            ],
-            "destination": "/uk/:path*",
-            "permanent": false
-        }
-    ],
-    "regions": ["sfo1"],
-    "functionFailoverRegions": ["iad1", "sfo1"],
-    "rewrites": [
-        { "source": "/about", "destination": "/about-our-company.html" },
-        { "source": "/resize/:width/:height", "destination": "/api/sharp" },
-        {
-            "source": "/proxy/:match*",
-            "destination": "https://example.com/:match*"
-        },
-        {
-            "source": "/:path((?!uk/).*)",
-            "has": [
-                {
-                    "type": "header",
-                    "key": "x-vercel-ip-country",
-                    "value": "GB"
-                }
-            ],
-            "destination": "/uk/:path*"
-        },
-        {
-            "source": "/dashboard",
-            "missing": [
-                {
-                    "type": "cookie",
-                    "key": "auth_token"
-                }
-            ],
-            "destination": "/login"
-        }
-    ],
-    "trailingSlash": false,
-    "env": {
-        "OPENAI_API_KEY": "@openai_api_key",
-        "ANTHROPIC_API_KEY": "@anthropic_api_key",
-        "GOOGLE_API_KEY": "@google_api_key"
+    {
+      "source": "/post/:path(\\d{1,})",
+      "destination": "/news/:path*"
     },
-    "builds": [
+    {
+      "source": "/:path((?!uk/).*)",
+      "has": [
         {
-            "src": "api/**/*.ts",
-            "use": "@vercel/node"
-        },
-        {
-            "src": "package.json",
-            "use": "@vercel/static-build"
+          "type": "header",
+          "key": "x-vercel-ip-country",
+          "value": "GB"
         }
-    ],
-    "routes": [
-        {
-            "src": "/api/(.*)",
-            "dest": "/api/$1"
-        }
-    ]
+      ],
+      "destination": "/uk/:path*",
+      "permanent": false
+    }
+  ],
+  "regions": ["sfo1"],
+  "trailingSlash": false
 }
