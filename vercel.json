@@ -138,6 +138,6 @@
     }
   ],
   "regions": ["sfo1"],
-  "functionFailoverRegions": ["iad1", "sfo1"],
+  "functionFailoverRegions": ["iad1"],
   "trailingSlash": false
 }
